@@ -17,6 +17,7 @@
 
 package com.sagr.kotlindevbytes.network
 
+import com.sagr.kotlindevbytes.database.DatabaseVideo
 import com.sagr.kotlindevbytes.domain.Video
 import com.squareup.moshi.JsonClass
 
@@ -63,4 +64,15 @@ fun NetworkVideoContainer.asDomainModel(): List<Video> {
                 updated = it.updated,
                 thumbnail = it.thumbnail)
     }
+}
+
+fun NetworkVideoContainer.asDatabaseModel(): Array<DatabaseVideo> {
+    return videos.map {
+        DatabaseVideo (
+            title = it.title,
+            description = it.description,
+            url = it.url,
+            updated = it.updated,
+            thumbnail = it.thumbnail)
+    }.toTypedArray()
 }
