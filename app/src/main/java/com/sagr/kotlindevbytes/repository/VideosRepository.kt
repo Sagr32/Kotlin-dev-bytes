@@ -16,3 +16,31 @@
  */
 
 package com.sagr.kotlindevbytes.repository
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
+import com.sagr.kotlindevbytes.database.VideosDatabase
+import com.sagr.kotlindevbytes.database.asDomainModel
+import com.sagr.kotlindevbytes.domain.Video
+import com.sagr.kotlindevbytes.network.Network
+import com.sagr.kotlindevbytes.network.asDatabaseModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+
+class VideosRepository (private val database : VideosDatabase) {
+
+    val videos: LiveData<List<Video>> = Transformations.map(database.videoDao.getVideos()) {
+        it.asDomainModel()
+    }
+
+
+
+    suspend fun refreshVideos(){
+        withContext(Dispatchers.IO){
+            val playlist = Network.devbytes.getPlaylist().await()
+            database.videoDao.insertAll(*playlist.asDatabaseModel())
+
+        }
+    }
+}

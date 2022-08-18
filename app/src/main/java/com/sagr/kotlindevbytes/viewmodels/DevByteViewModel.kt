@@ -19,9 +19,11 @@ package com.sagr.kotlindevbytes.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.*
+import com.sagr.kotlindevbytes.database.getDatabase
 import com.sagr.kotlindevbytes.domain.Video
 import com.sagr.kotlindevbytes.network.Network
 import com.sagr.kotlindevbytes.network.asDomainModel
+import com.sagr.kotlindevbytes.repository.VideosRepository
 
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -38,26 +40,11 @@ import java.io.IOException
  */
 class DevByteViewModel(application: Application) : AndroidViewModel(application) {
 
-    /**
-     *
-     */
+    private val database = getDatabase(application)
 
-    /**
-     *
-     */
+    val videosRepository = VideosRepository(database)
 
-    /**
-     * A playlist of videos that can be shown on the screen. This is private to avoid exposing a
-     * way to set this value to observers.
-     */
-    private val _playlist = MutableLiveData<List<Video>>()
-
-    /**
-     * A playlist of videos that can be shown on the screen. Views should use this to get access
-     * to the data.
-     */
-    val playlist: LiveData<List<Video>>
-        get() = _playlist
+    val playlist = videosRepository.videos
 
     /**
      * init{} is called immediately when this ViewModel is created.
@@ -71,13 +58,7 @@ class DevByteViewModel(application: Application) : AndroidViewModel(application)
      * background thread.
      */
     private fun refreshDataFromNetwork() = viewModelScope.launch {
-        try {
-            val playlist = Network.devbytes.getPlaylist().await()
-            _playlist.postValue(playlist.asDomainModel())
-        } catch (networkError: IOException) {
-            // Show an infinite loading spinner if the request fails
-            // challenge exercise: show an error to the user if the network request fails
-        }
+        videosRepository.refreshVideos()
     }
 
     /**
